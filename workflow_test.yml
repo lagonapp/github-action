@@ -1,0 +1,22 @@
+name: lagon
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        required: true
+      site_url:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - uses: actions/checkout@v2
+      # _ACTION_REPO_ gets updated by the test.sh script
+      - uses: _ACTION_REPO_
+        with:
+          lagon_token: ${{ secrets.LAGON_API_TOKEN }}
+          command: ${{ github.event.inputs.command }} # github.event.inputs is only for workflow_dispatch events
+          site_url: ${{ github.event.inputs.site_url }} # github.event.inputs is only for workflow_dispatch events
