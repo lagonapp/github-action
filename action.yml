@@ -1,0 +1,71 @@
+name: "Lagon CLI"
+description: "Easily integrate Lagon CLI operations into your Github workflow"
+branding:
+  icon: code
+  color: blue
+inputs:
+  lagon_token:
+    description: "Your Lagon API token"
+    required: true
+  command:
+    description: 'The Lagon CLI command to run. For example: "deploy" - will publish your Function'
+    required: false
+    default: "deploy --prod"
+  site_url:
+    description: "Specify custom url for self-hosted Lagon instances"
+    required: false
+    default: "https://dash.lagon.app"
+  config:
+    description: "Pass in .lagon/config.json file for your function"
+    required: false
+    default: ""
+outputs:
+  cli_stdout:
+    description: "The raw stdout from the CLI command executed"
+    value: ${{ steps.cli.outputs.cli_stdout }}
+runs:
+  using: "composite"
+  steps:
+    - name: "Install Node.js"
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: "Install CLI"
+      shell: bash
+      run: |
+        npm install --global @lagon/cli esbuild
+
+    - name: "Execute CLI"
+      id: cli
+      env:
+        LAGON_TOKEN: ${{ inputs.lagon_token }}
+        LAGON_COMMAND: ${{ inputs.command }}
+        LAGON_URL: ${{ inputs.site_url }}
+        LAGON_CONFIG: ${{ inputs.config }}
+      shell: bash
+      run: |
+        echo "Configuring Lagon CLI..."
+        if [[ -z "${LAGON_TOKEN}" ]]; then
+            echo "LAGON_API_TOKEN input is not set"
+            exit 1
+        fi
+
+        # Setup config folders
+        mkdir -p "$HOME/.lagon"
+
+        # Setup auth
+        echo \{\"token\":\""${LAGON_TOKEN}"\",\"site_url\":\""${LAGON_URL}"\"\} | jq >"$HOME/.lagon/config.json"
+
+        # Setup lagon function config if one was provided
+        if [[ -n "${LAGON_CONFIG}" ]]; then
+            echo "LAGON_CONFIG variable set from environment...applying to local directory"
+            mkdir -p .lagon
+            echo "$LAGON_CONFIG" | jq >.lagon/config.json
+        fi
+
+        # Run CLI
+        echo "Executing CLI..."
+        eval "lagon $LAGON_COMMAND" | tee lagon.output
+        # Action is done!
+        exit $?
