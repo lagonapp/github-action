@@ -1,0 +1,42 @@
+name: "Lagon CLI"
+description: "Easily integrate Lagon CLI operations into your Github workflow"
+branding:
+  icon: code
+  color: blue
+inputs:
+  lagon_token:
+    description: "Your Lagon API token"
+    required: true
+  command:
+    description: "The Lagon CLI command to run"
+    required: false
+    default: "deploy --prod"
+  site_url:
+    description: "Specify custom url for self-hosted Lagon instances"
+    required: false
+    default: "https://dash.lagon.app"
+runs:
+  using: "composite"
+  steps:
+    - name: "Install Node.js"
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+        cache: npm
+
+    - name: "Install CLI"
+      run: npm install --global @lagon/cli esbuild
+
+    - name: "Execute CLI"
+      env:
+        LAGON_TOKEN: ${{ inputs.lagon_token }}
+        LAGON_COMMAND: ${{ inputs.command }}
+        LAGON_URL: ${{ inputs.site_url }}
+      shell: bash
+      run: |
+        # Setup config folder
+        mkdir -p ~/.lagon
+        # Setup auth
+        echo \{\"token\":\""${LAGON_TOKEN}"\",\"site_url\":\""${LAGON_URL}"\"\} >~/.lagon/config.json
+        # Run CLI
+        eval lagon "$LAGON_COMMAND"
