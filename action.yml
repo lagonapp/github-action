@@ -47,7 +47,7 @@ runs:
       run: |
         echo "Configuring Lagon CLI..."
         if [[ -z "${LAGON_TOKEN}" ]]; then
-            echo "LAGON_API_TOKEN input is not set"
+            echo "LAGON_TOKEN input is not set"
             exit 1
         fi
 

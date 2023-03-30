@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: lagonapp/github-action@latest
         with:
-          lagon_token: ${{ secrets.LAGON_API_TOKEN }}
+          lagon_token: ${{ secrets.LAGON_TOKEN }}
       - name: Log Function URL
         run: |
           url=$(grep -o 'https://[^[:space:]]*' lagon.output)
@@ -41,7 +41,7 @@ If you want to run a different command just specify it with the `command` input:
 
 ```bash
         with:
-          lagon_token: ${{ secrets.LAGON_API_TOKEN }}
+          lagon_token: ${{ secrets.LAGON_TOKEN }}
           command: ls
 ```
 
@@ -64,7 +64,7 @@ Inputs are provided using the `with:` section of your workflow YML file.
 
 ```bash
         with:
-          lagon_token: ${{ secrets.LAGON_API_TOKEN }}
+          lagon_token: ${{ secrets.LAGON_TOKEN }}
           config: |
             {
               "function_id": "${{ vars.lagon_function_id }}",
